@@ -1,11 +1,29 @@
 Package: mlfinance
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
+Title: Machine learning in finance
+Version: 0.0.1
+Author: c(
+    person("Mislav", "Sagovac", email = "mislav.sagovac@contentio.biz", role = c("cre","aut")))
 Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Description: The package provides usefull functions for applying ML in finance.
+    For now, it only containss triple barrier labeling.
+License: GPL-3
+URL: https://github.com/MislavSag/mlfinance
+BugReports: https://github.com/MislavSag/mlfinance/issues
+Depends:
+    R (>= 3.5.0)
+Imports:
+    data.table,
+    xts,
+    lubridate
+Suggests:
+    xts,
+    data.table,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.1.1
+VignetteBuilder: knitr
+Config/testthat/edition: 3

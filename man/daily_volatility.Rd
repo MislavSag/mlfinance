@@ -20,6 +20,6 @@ Advances in Financial Machine Learning, Snippet 3.1, page 44.
 }
 \examples{
 data("spy")
-daily_volatility(spy[, c('index', 'close')])
+daily_volatility(subset(spy, select = c("index", "close")))
 
 }

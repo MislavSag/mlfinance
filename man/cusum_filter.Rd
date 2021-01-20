@@ -9,8 +9,7 @@ cusum_filter(price, threshold)
 \arguments{
 \item{price}{vector of prices}
 
-\item{threshold}{scalar or numeric vector of same size as price.
-When the change is larger than the threshold, the function captures it as an even}
+\item{threshold}{scalar or numeric vector of same size as price. When the change is larger than the threshold, the function captures it as an even}
 }
 \value{
 vector of cusum events

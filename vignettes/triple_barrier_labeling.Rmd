@@ -14,12 +14,16 @@ In these vignette we will show how to use triple barrier labelling in 2 cases:
 1. Without primary model.
 2. With primary model (meta labelling).
 
-First lets import sample data from `mlfinance` package:
+First lets import packages and sample data from `mlfinance` package:
 
-```{r}
-data(spy)
+```{r message=FALSE,warning=FALSE}
+# import packages
 library(data.table)
 library(mlfinance)
+
+# import sample data
+data(spy)
+
 ```
 
 Data contains SPY market data with 5 minute frequency for period from 2018-01-01 to 2020-01-01.
@@ -28,6 +32,8 @@ Next, we will calculate daily volatility. There are many options of how to calcu
 Probably best approach would be to calculate realized volatility, but for our simple case we will `daily_volatility` function from the package.
 
 ```{r}
-# daily_vol <- daily_volatility(spy[, c('index', 'close')], 50)
+# compute daily volatility
+daily_vol <- daily_volatility(spy[, c('index', 'close')], 50)
+
 ```
 

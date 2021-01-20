@@ -24,5 +24,4 @@
 #' data(spy_5_minute)
 #' head(spy_5_minute)
 #'
-#' @export
 "spy"

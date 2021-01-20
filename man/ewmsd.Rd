@@ -19,5 +19,5 @@ Exponential moving average standard devation
 }
 \examples{
 data("spy")
-daily_volatility(spy[, c('index', 'close')])
+daily_volatility(subset(spy, select = c("index", "close")))
 }

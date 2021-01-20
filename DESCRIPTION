@@ -15,10 +15,9 @@ Depends:
 Imports:
     data.table,
     xts,
-    lubridate
+    lubridate,
+    slider
 Suggests:
-    xts,
-    data.table,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)

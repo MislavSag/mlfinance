@@ -8,17 +8,17 @@
 #'
 #' @return data.table with inde and daily_vol columns
 #'
-#' @examples
-#' \dontrun{
-#' data("spy")
-#' daily_volatility(spy[, c('index', 'close')])
-#' }
-#' @export
 #' @import data.table
-#' @import lubridate
-#' @import xts
 #' @importFrom lubridate days
 #' @importFrom xts is.xts
+#' @importFrom slider slide
+#'
+#' @examples
+#' data("spy")
+#' daily_volatility(subset(spy, select = c("index", "close")))
+#'
+#' @export
+
 daily_volatility <- function(price, span = 50) {
 
   # convert to data.table because I will use DT merge with rolling
@@ -27,10 +27,8 @@ daily_volatility <- function(price, span = 50) {
   }
 
   # 1 day delta
-  t_day_lag <- data.table::data.table(index = price$index - lubridate::days(1))
+  t_day_lag <- data.table::data.table(index = price$index - days(1))
 
-  print(t_day_lag)
-  print(price)
   # merge t_day_lag with input index to get first and last period of daily vol
   x <- price[t_day_lag, on = 'index', roll = -Inf]
   x_ind <- price[t_day_lag, on = 'index', roll = -Inf, which = TRUE]
@@ -42,8 +40,8 @@ daily_volatility <- function(price, span = 50) {
   alpha <- 2 / (span + 1)
 
   # calculate ewm sd
-  y <- slider::slide(.x = as.vector(y),
-                     .f = ~{ewmsd(.x, alpha)}, .before = 1000, .complete = FALSE)
+  y <- slide(.x = as.vector(y),
+             .f = ~{ewmsd(.x, alpha)}, .before = 1000, .complete = FALSE)
   y <- unlist(y)
   dt <- data.table(index = price$index, daily_vol = y, key = 'index')
   dt <- dt[x_ind > 1]
@@ -62,7 +60,8 @@ daily_volatility <- function(price, span = 50) {
 #'
 #' @examples
 #' data("spy")
-#' daily_volatility(spy[, c('index', 'close')])
+#' daily_volatility(subset(spy, select = c("index", "close")))
+
 ewmsd <- function(y, alpha) {
    m <- length(y)
    weights <- (1 - alpha)^((m - 1):0)
@@ -72,3 +71,6 @@ ewmsd <- function(y, alpha) {
    ewmsd
 }
 
+#   Install Package:           'Ctrl + Shift + B'
+#   Check Package:             'Ctrl + Shift + E'
+#   Test Package:              'Ctrl + Shift + T'

@@ -17,7 +17,7 @@ An object of class \code{"data.frame"}
 }
 }
 \usage{
-data(spy_5_minute)
+data(spy)
 }
 \description{
 Market data for SPY with 5 minute frequrncy for period from 2018-01-01 to 2020-31-12.
@@ -25,8 +25,8 @@ Data was generated through Interactive Brokers API.
 }
 \examples{
 
-data(spy_5_minute)
-head(spy_5_minute)
+data(spy)
+head(spy)
 
 }
 \references{

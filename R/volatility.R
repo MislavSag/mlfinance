@@ -54,7 +54,7 @@ daily_volatility <- function(price, span = 50) {
 #' @description Exponential moving average standard devation
 #'
 #' @param y prices
-#' @param span used to calculate alpha parameter in exponential moving average
+#' @param alpha smoothing factor
 #'
 #' @return ewm standard devation
 #'

@@ -9,7 +9,7 @@ ewmsd(y, alpha)
 \arguments{
 \item{y}{prices}
 
-\item{span}{used to calculate alpha parameter in exponential moving average}
+\item{alpha}{smoothing factor}
 }
 \value{
 ewm standard devation

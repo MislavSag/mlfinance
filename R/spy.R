@@ -5,7 +5,7 @@
 #'
 #' @docType data
 #'
-#' @usage data(spy_5_minute)
+#' @usage data(spy)
 #'
 #' @format An object of class \code{"data.frame"}
 #' \describe{
@@ -21,7 +21,7 @@
 #' @keywords datasets
 #' @examples
 #'
-#' data(spy_5_minute)
-#' head(spy_5_minute)
+#' data(spy)
+#' head(spy)
 #'
 "spy"

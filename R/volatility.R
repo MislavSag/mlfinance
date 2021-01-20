@@ -9,17 +9,16 @@
 #' @return data.table with inde and daily_vol columns
 #'
 #' @examples
+#' \dontrun{
 #' data("spy")
 #' daily_volatility(spy[, c('index', 'close')])
-#'
+#' }
 #' @export
 #' @import data.table
 #' @import lubridate
 #' @import xts
 #' @importFrom lubridate days
 #' @importFrom xts is.xts
-
-
 daily_volatility <- function(price, span = 50) {
 
   # convert to data.table because I will use DT merge with rolling
@@ -64,7 +63,6 @@ daily_volatility <- function(price, span = 50) {
 #' @examples
 #' data("spy")
 #' daily_volatility(spy[, c('index', 'close')])
-
 ewmsd <- function(y, alpha) {
    m <- length(y)
    weights <- (1 - alpha)^((m - 1):0)

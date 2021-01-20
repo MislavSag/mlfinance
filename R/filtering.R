@@ -49,3 +49,6 @@ cusum_filter <- function(price, threshold) {
   # add one because we removed one observation in the begging when calculating returns
   t_events + 1
 }
+
+test <- seq(100, 110, 0.5)
+cusum_filter(test, 0.01)

@@ -1,7 +1,8 @@
 context('CUSUM filter')
 
 test_that("resuts are correct", {
-  test <- seq(100, 110, 0.5)
-  expect_equal(cusum_filter(test, 0.01), c(4, 7, 10, 13, 16, 19))
+  data(spy)
+  close <- subset(spy, select = c("index", "close"))[1:100, ]
+  expect_equal(cusum_filter(close, 0.002, return_datetime = FALSE), c(7, 75, 80, 90))
 }
 )

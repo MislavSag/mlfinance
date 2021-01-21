@@ -5,20 +5,27 @@
 #'
 #' @param price vector of prices
 #' @param threshold scalar or numeric vector of same size as price. When the change is larger than the threshold, the function captures it as an even
+#' @param return_datetime Should the function return datetime object or index of cusum filter
 #'
-#' @return vector of cusum events
+#' @return vector of cusum events or datetime of cusum events
 #'
 #' @examples
 #' data("spy")
-#' cusum_events <- cusum_filter(spy$close, 0.001)
-#' cusum_events <- spy$index[cusum_events]
+#' cusum_events <- cusum_filter(subset(spy, select = c("index", "close")), 0.001)
 #'
 #' @export
+cusum_filter <- function(price, threshold, return_datetime = TRUE) {
 
-cusum_filter <- function(price, threshold) {
+  # check argument types
+  price <- two_column_check(price)
+  checkmate::assert_number(threshold)
+  checkmate::assert_logical(return_datetime)
+
+  # solve No visible binding for global variable
+  Datetime <- Value <- `.` <- NULL
 
   # calculate returns
-  returns <- diff(log(price))
+  returns <- diff(log(price$Value))
 
   # threshold to vector if on element
   if (length(threshold) == 1) {
@@ -45,6 +52,11 @@ cusum_filter <- function(price, threshold) {
       t_events <- c(t_events, i)
     }
   }
-  # add one because we removed one observation in the begging when calculating returns
-  t_events + 1
+
+  # return numeric or datetime
+  if (return_datetime) {
+    return(price[t_events + 1, .(Datetime)])  # add one because we removed one observation in the begging when calculating returns
+  } else {
+    return(t_events + 1)
+  }
 }

@@ -23,7 +23,7 @@ library(mlfinance)
 
 # import sample data
 data(spy)
-
+close <- spy[, c('index', 'close')]
 ```
 
 Data contains SPY market data with 5 minute frequency for period from 2018-01-01 to 2020-01-01.
@@ -33,7 +33,66 @@ Probably best approach would be to calculate realized volatility, but for our si
 
 ```{r}
 # compute daily volatility
-daily_vol <- daily_volatility(spy[, c('index', 'close')], 50)
-
+daily_vol <- daily_volatility(close, 50)
+head(daily_vol)
 ```
 
+As you can see, the function returns daily volatility for every intraday timestamps. It does so by looking for nearest date from close index vector one day into the past.
+
+Now, usually, we don't want to trade on every (any) time period (bar), but want to filter important bars. We want to trade only when 'something' unusual happens on he market, because than there a re more inefficiencies (rationalities). One way to filter bars i to use CUSUM filter. Simply said, CUSUM filter check if return deviate more than some threshold in some period. We can calculate CUSUM events by following:
+
+```{r}
+cusum_events <- cusum_filter(close, mean(daily_vol$Value, na.rm = TRUE))
+head(cusum_events)
+```
+
+Next, we want to decide hoe long into the future we want to wait before we close out position.
+That is, we have to define vertical barrier:
+
+```{r}
+vartical_barriers <- add_vertical_barrier(cusum_events, close$index, num_days = 1)
+head(vartical_barriers)
+```
+
+Now we have everything we need to move to triple barrier method. We jump straight to code an dexplain all arguments:
+
+```{r}
+min_return <- 0.005
+pt_sl <- c(1, 2)
+events <- get_events(price = close,                             # close data.table with index and value
+                     t_events = cusum_events,                   # bars to look at for trades
+                     pt_sl = pt_sl,                             # multiple target argument to get width of the barriers
+                     target = daily_vol,                        # values that are used to determine the width of the barrier
+                     min_ret = min_return,                      # minimum return between events
+                     vertical_barrier_times=vartical_barriers,  # vartical barriers timestamps
+                     side_prediction=NA)                        # prediction from primary model (in this case no primary model)
+head(events)
+```
+
+The resulting table shows:
+
+- $t_0$ - start date of the bar
+- $t_1$ - end date of the bar
+- $trgt$ - event's target, threshold that has to be touched (after multiplying with $pt$ or $st$)
+- $pt$ - profit taking multiplier
+- $sl$ - stop loss multiplier
+
+Finally, we have to generate bins (labels) based on events table and close prices:
+
+```{r}
+labels <- get_bins(events, close)
+head(labels)
+```
+
+In the table we can see labels (bins) for dates extracted with CUSUM filter (you can choose your own filter). 
+A a bonus, we get return column (`ret`) which can be used as weights in ML models.
+
+Labels can be highly unbalanced which can be a problem for ML model.
+There is an `drop_labels` function in the package that deletes labels under some frequency threshold. Here is the example:
+
+```{r}
+labels_red <- drop_labels(labels, min_pct = 0.2)
+head(labels_red)
+```
+
+The label -1 is deleted because it's frequency (14%) is lower than threshold (20%).

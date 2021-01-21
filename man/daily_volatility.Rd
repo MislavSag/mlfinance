@@ -7,12 +7,12 @@
 daily_volatility(price, span = 50)
 }
 \arguments{
-\item{price}{xts object with prices or data.table object with columns index and price}
+\item{price}{xts object with prices or data.table object with first column is of type POSIXct}
 
 \item{span}{used to calculate alpha parameter in exponential moving average}
 }
 \value{
-data.table with inde and daily_vol columns
+data.table with Datetime and Value columns
 }
 \description{
 Advances in Financial Machine Learning, Snippet 3.1, page 44.

@@ -4,15 +4,17 @@
 \alias{cusum_filter}
 \title{cusum_filter}
 \usage{
-cusum_filter(price, threshold)
+cusum_filter(price, threshold, return_datetime = TRUE)
 }
 \arguments{
 \item{price}{vector of prices}
 
 \item{threshold}{scalar or numeric vector of same size as price. When the change is larger than the threshold, the function captures it as an even}
+
+\item{return_datetime}{Should the function return datetime object or index of cusum filter}
 }
 \value{
-vector of cusum events
+vector of cusum events or datetime of cusum events
 }
 \description{
 Advances in Financial Machine Learning, Snippet 2.4, page 39.
@@ -20,7 +22,6 @@ Advances in Financial Machine Learning, Snippet 2.4, page 39.
 }
 \examples{
 data("spy")
-cusum_events <- cusum_filter(spy$close, 0.001)
-cusum_events <- spy$index[cusum_events]
+cusum_events <- cusum_filter(subset(spy, select = c("index", "close")), 0.001)
 
 }

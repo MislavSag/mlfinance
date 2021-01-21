@@ -3,15 +3,15 @@
 #' @description Advances in Financial Machine Learning, Snippet 3.1, page 44.
 #'  Computes the daily volatility at intraday estimation points.
 #'
-#' @param price xts object with prices or data.table object with columns index and price
+#' @param price xts object with prices or data.table object with first column is of type POSIXct
 #' @param span used to calculate alpha parameter in exponential moving average
 #'
-#' @return data.table with inde and daily_vol columns
+#' @return data.table with Datetime and Value columns
 #'
 #' @import data.table
 #' @importFrom lubridate days
-#' @importFrom xts is.xts
 #' @importFrom slider slide
+#' @import checkmate
 #'
 #' @examples
 #' data("spy")
@@ -21,20 +21,22 @@
 
 daily_volatility <- function(price, span = 50) {
 
-  # convert to data.table because I will use DT merge with rolling
-  if (xts::is.xts(price) | is.data.frame(price)) {
-    price <- data.table::as.data.table(price)
-  }
+  # check argument types
+  price <- two_column_check(price)
+  checkmate::assert_number(span)
+
+  # solve No visible binding for global variable
+  Datetime <- Value <- NULL
 
   # 1 day delta
-  t_day_lag <- data.table::data.table(index = price$index - days(1))
+  t_day_lag <- data.table::data.table(Datetime = price$Datetime - days(1))
 
   # merge t_day_lag with input index to get first and last period of daily vol
-  x <- price[t_day_lag, on = 'index', roll = -Inf]
-  x_ind <- price[t_day_lag, on = 'index', roll = -Inf, which = TRUE]
+  x <- price[t_day_lag, on = 'Datetime', roll = -Inf]
+  x_ind <- price[t_day_lag, on = 'Datetime', roll = -Inf, which = TRUE]
 
   # calculate returns of daily observations
-  y = (x$close / price$close) - 1
+  y = (x$Value / price$Value) - 1
 
   # calculate alpha based on span argument
   alpha <- 2 / (span + 1)
@@ -43,7 +45,7 @@ daily_volatility <- function(price, span = 50) {
   y <- slide(.x = as.vector(y),
              .f = ~{ewmsd(.x, alpha)}, .before = 1000, .complete = FALSE)
   y <- unlist(y)
-  dt <- data.table(index = price$index, daily_vol = y, key = 'index')
+  dt <- data.table(Datetime = price$Datetime, Value = y, key = 'Datetime')
   dt <- dt[x_ind > 1]
   return(dt)
 }

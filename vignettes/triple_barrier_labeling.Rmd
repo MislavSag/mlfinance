@@ -1,5 +1,5 @@
 ---
-title: "Triple-barrier-labelling"
+title: "triple_barrier_labeling"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{triple_barrier_labeling}

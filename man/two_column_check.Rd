@@ -4,10 +4,10 @@
 \alias{two_column_check}
 \title{two_column_check}
 \usage{
-two_column_check(df)
+two_column_check(x)
 }
 \arguments{
-\item{df}{data.frame, xts or data.table object}
+\item{x}{data.frame, xts or data.table object}
 }
 \value{
 data.table with 2 columns: Datetime and Value

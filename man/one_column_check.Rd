@@ -4,16 +4,16 @@
 \alias{one_column_check}
 \title{one_column_check}
 \usage{
-one_column_check(df)
+one_column_check(x)
 }
 \arguments{
-\item{df}{data.frame, xts or data.table object}
+\item{x}{data.frame, xts or data.table object}
 }
 \value{
 data.table with 1 column: Datetime
 }
 \description{
-Help function to check arguments of df with one column.
+Help function to check arguments of x with one column.
 }
 \examples{
  data(spy)

@@ -12,6 +12,7 @@
 #' @return data.table with 2 columns: t_events and vertical barrier
 #'
 #' @importFrom lubridate days hours minutes seconds
+#' @import data.table
 #'
 #' @examples
 #' data("spy")
@@ -39,7 +40,7 @@ add_vertical_barrier <- function(t_events,
   # solve No visible binding for global variable
   nearest <- Datetime <- Value <- NULL
 
-  # calcualte timedelta based on inputs
+  # calculate timedelta based on inputs
   timedelta <- days(num_days) + hours(num_hours) +
     minutes(num_minutes) + seconds(num_seconds)
   t_events_timdelta <- t_events[[1]] + timedelta
@@ -57,7 +58,7 @@ add_vertical_barrier <- function(t_events,
 
 #' @title apply_pt_sl_on_t1
 #'
-#' @description Exponential moving average standard devation
+#' @description Exponential moving average standard deviation
 #'
 #' @param price xts or data.table with index and price columns
 #' @param events Indices that signify "events" (e.g. CUSUM events)

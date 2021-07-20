@@ -3,7 +3,7 @@
 #' @description Advances in Financial Machine Learning, Snippet 3.1, page 44.
 #'  Computes the daily volatility at intraday estimation points.
 #'
-#' @param price xts object with prices or data.table object with first column is of type POSIXct
+#' @param price data.table or data.frame object with first column is of type POSIXct
 #' @param span used to calculate alpha parameter in exponential moving average
 #'
 #' @return data.table with Datetime and Value columns
@@ -43,7 +43,7 @@ daily_volatility <- function(price, span = 50) {
 
   # calculate ewm sd
   y <- slide(.x = as.vector(y),
-             .f = ~{ewmsd(.x, alpha)}, .before = 1000, .complete = FALSE)
+             .f = ~{ewmsd(.x, alpha)}, .before = 500, .complete = FALSE)
   y <- unlist(y)
   dt <- data.table(Datetime = price$Datetime, Value = y, key = 'Datetime')
   dt <- dt[x_ind > 1]
@@ -63,7 +63,6 @@ daily_volatility <- function(price, span = 50) {
 #' @examples
 #' data("spy")
 #' daily_volatility(subset(spy, select = c("index", "close")))
-
 ewmsd <- function(y, alpha) {
    m <- length(y)
    weights <- (1 - alpha)^((m - 1):0)
@@ -73,6 +72,4 @@ ewmsd <- function(y, alpha) {
    ewmsd
 }
 
-#   Install Package:           'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
 #   Test Package:              'Ctrl + Shift + T'

@@ -7,7 +7,7 @@
 daily_volatility(price, span = 50)
 }
 \arguments{
-\item{price}{xts object with prices or data.table object with first column is of type POSIXct}
+\item{price}{data.table or data.frame object with first column is of type POSIXct}
 
 \item{span}{used to calculate alpha parameter in exponential moving average}
 }

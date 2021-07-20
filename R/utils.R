@@ -7,7 +7,6 @@
 #' @return data.table with 2 columns: Datetime and Value
 #'
 #' @import data.table
-#' @import xts
 #'
 #' @examples
 #'  data(spy)
@@ -18,16 +17,15 @@
 two_column_check <- function(x) {
 
   # convert to data.table
-  if (is.xts(x) | is.data.frame(x)) {
+  if (is.data.frame(x)) {
     x <- as.data.table(x)
+  } else {
+    stop("Argument x must be of class data.frame")
   }
 
   # check if x contains POSIXct and numeric columns
-  print(x)
   all_cols <- colnames(x)
-  print(all_cols)
   datetime_column <- x[ , lapply(.SD, inherits, "POSIXct"), .SDcols = all_cols]
-  print(datetime_column)
   datetime_column <- unlist(datetime_column, use.names = FALSE)
   if (length(datetime_column) == 0) {
     stop('Argument price must contain POSIXct column.')
@@ -57,7 +55,6 @@ two_column_check <- function(x) {
 #' @return data.table with 1 column: Datetime
 #'
 #' @import data.table
-#' @import xts
 #'
 #' @examples
 #'  data(spy)
@@ -67,7 +64,7 @@ two_column_check <- function(x) {
 #' @export
 one_column_check <- function(x) {
   # convert to data.table
-  if (xts::is.xts(x) | is.data.frame(x)) {
+  if (is.data.frame(x)) {
     x <- data.table::as.data.table(x)
   } else if (inherits(x, 'POSIXct')) {
     x <- data.table::as.data.table(data.frame(Datetime = x))

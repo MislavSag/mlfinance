@@ -15,10 +15,14 @@ Depends:
 Imports:
     data.table,
     checkmate (>= 2.0.0),
-    xts,
     lubridate,
     slider,
-    future.apply (>= 1.5.0)
+    future.apply (>= 1.5.0),
+    zoo,
+    eventstudies,
+    TTR,
+    roll,
+    RollingWindow
 Suggests:
     knitr,
     rmarkdown,

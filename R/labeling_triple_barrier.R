@@ -20,7 +20,6 @@
 #' add_vertical_barrier(cusum_events, spy$index, num_days = 1)
 #'
 #' @export
-# add vertical bar
 add_vertical_barrier <- function(t_events,
                                  close_date,
                                  num_days=1,
@@ -66,6 +65,7 @@ add_vertical_barrier <- function(t_events,
 #'
 #' @import data.table
 #' @importFrom lubridate NA_POSIXct_
+#' @import future.apply
 #'
 #' @return data.table; timestamps of when first barrier was touched
 apply_pt_sl_on_t1 <- function(price, events, pt_sl = c(1, 1)) {
@@ -96,29 +96,29 @@ apply_pt_sl_on_t1 <- function(price, events, pt_sl = c(1, 1)) {
   }
 
   # easier but slower OPTIMIZE
-  t1_ <- events$t1
-  loop_index <- t1_ %in% events
-  if (any(is.na(loop_index))) {
-    t1_[is.na(loop_index)] <- data.table::last(price$Datetime)
-  }
-  t0_ <- events$t0
-  pt_ <- profit_taking$V2
-  sl_ <- stop_loss$V2
+  t1_ <- future_vapply(events$t1, function(x) ifelse(is.null(which(x == price$Datetime)),
+                                                     NA, which(x == price$Datetime)), integer(1))
+  t1_ <- ifelse(is.na(t1_), nrow(price), t1_)
+  t0_ <- future_vapply(events$t0, function(x) which(x == price$Datetime), integer(1))
+  pt_ <- profit_taking$Value
+  sl_ <- stop_loss$Value
   side_ <- events$side
   sl <- c()
   pt <- c()
-  for (i in seq_along(t0_)) {
-    closing_prices <- price[Datetime %between% c(t0_[i], t1_[i])]
-    closing_prices[, cum_returns := Value / data.table::first(Value, 1) - 1 * side_[i]]
-    sl_time <- closing_prices[cum_returns < sl_[i], Datetime] # Earliest stop loss date
-    sl <- c(sl, ifelse(is.null(sl_time), NA_POSIXct_, sl_time))
-    pt_time <- closing_prices[cum_returns > pt_[i], Datetime] # Earliest profit taking date
-    pt <- c(pt, ifelse(is.null(pt_time), NA_POSIXct_, pt_time))  # nafill in data.table !!!!
-  }
+  pt_sl_ <- future_lapply(seq_along(t0_), function(x) {
+    closing_prices <- price[t0_[x]:t1_[x]]
+    closing_prices[, cum_returns := Value / data.table::first(Value, 1) - 1 * side_[x]]
+    sl_time <- closing_prices[cum_returns < sl_[x], Datetime] # Earliest stop loss date
+    sl <- ifelse(is.null(sl_time), NA_POSIXct_, sl_time)
+    pt_time <- closing_prices[cum_returns > pt_[x], Datetime] # Earliest profit taking date
+    pt <- ifelse(is.null(pt_time), NA_POSIXct_, pt_time)  # nafill in data.table !!!!
+    return(cbind(pt = pt, sl = sl))
+  })
+  pt_sl_ <- do.call(rbind, pt_sl_)
   first_touch_dates = data.table(t0 = events$t0,
                                  t1 = events$t1,
-                                 pt = as.POSIXct(pt, origin = "1970-01-01"),
-                                 sl = as.POSIXct(sl, origin = "1970-01-01"))
+                                 pt = as.POSIXct(pt_sl_[, 1], origin = "1970-01-01"),
+                                 sl = as.POSIXct(pt_sl_[, 2], origin = "1970-01-01"))
   first_touch_dates
 }
 
@@ -256,6 +256,20 @@ get_events <- function(price,
 #' labels <- get_bins(events, close)
 #'
 #' @export
+# data("spy")
+# close <- subset(spy, select = c("index", "close"))
+# daily_vol <- daily_volatility(close)
+# cusum_events <- cusum_filter(close, 0.001)
+# vertical_barriers <- add_vertical_barrier(cusum_events, spy$index, num_days = 1)
+# events <- get_events(price = close,
+#                     t_events = cusum_events,
+#                       pt_sl = c(1, 2),
+#                       target = daily_vol,
+#                       min_ret = 0.005,
+#                       vertical_barrier_times=vertical_barriers,
+#                       side_prediction=NA)
+# labels <- get_bins(events, close)
+
 get_bins <- function(triple_barrier_events, price) {
 
   # check argument types

@@ -18,11 +18,17 @@ Imports:
     lubridate,
     slider,
     future.apply (>= 1.5.0),
-    zoo,
     eventstudies,
     TTR,
     roll,
-    RollingWindow
+    RollingWindow,
+    QuantTools,
+    forecast,
+    doParallel,
+    runner,
+    Rcatch22,
+    exuber,
+    zoo
 Suggests:
     knitr,
     rmarkdown,

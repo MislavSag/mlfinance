@@ -4,7 +4,11 @@
 \alias{features_from_ohlcv}
 \title{Genereta Features from OHLCV}
 \usage{
-features_from_ohlcv(ohlcv, window_sizes = c(5, 22))
+features_from_ohlcv(
+  ohlcv,
+  window_sizes = c(5, 22),
+  quantile_divergence_window = c(50, 100)
+)
 }
 \arguments{
 \item{ohlcv}{a data.table object with coluimns: symbol, datetime, open, hogh, low, close, volume}

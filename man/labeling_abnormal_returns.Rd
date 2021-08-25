@@ -8,7 +8,8 @@ labeling_abnormal_returns(
   events,
   firm_returns,
   market_returns,
-  event_horizon = 30
+  event_horizon = 30,
+  model_type = c("marketModel", "excessReturn", "None")
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ labeling_abnormal_returns(
 \item{market_returns}{Returns of SPY or some similiar asset.}
 
 \item{event_horizon}{an ‘integer’ of length 1 that specifies a symmetric event window around the event time as specified in the index of “firm.returns”.}
+
+\item{model_type}{Model type. See eventstudy function.}
 }
 \value{
 Two data frames. First contains labels and abnormal returns and second contains whole returns path.

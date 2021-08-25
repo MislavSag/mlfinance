@@ -6,6 +6,7 @@
 #' @param firm_returns zoo matrix of ‘outcome’ or ‘response’ series
 #' @param market_returns Returns of SPY or some similiar asset.
 #' @param event_horizon an ‘integer’ of length 1 that specifies a symmetric event window around the event time as specified in the index of “firm.returns”.
+#' @param model_type Model type. See eventstudy function.
 #'
 #' @return Two data frames. First contains labels and abnormal returns and second contains whole returns path.
 #'
@@ -19,7 +20,8 @@
 labeling_abnormal_returns <- function(events,
                                       firm_returns,
                                       market_returns,
-                                      event_horizon = 30) {
+                                      event_horizon = 30,
+                                      model_type = c("marketModel", "excessReturn", "None")) {
 
 
   # solve No visible binding for global variable
@@ -29,6 +31,10 @@ labeling_abnormal_returns <- function(events,
   min_market_return_date <- min(zoo::index(market_returns)) + 5
   firm_returns <- firm_returns[paste0(min_market_return_date, "/")]
 
+  # model type
+  model_type <- match.arg(model_type)
+
+  # get labels based on abnormal returns
   eventstudy_results <- future_lapply(unique(events$name), function(s) {
     print(s)
 
@@ -43,22 +49,42 @@ labeling_abnormal_returns <- function(events,
     prices_ <- na.omit(firm_returns[, s])
 
     # event studies
-    es_results <- lapply(1:nrow(events_), function(i) {
+    es_results <- future_lapply(1:nrow(events_), function(i) {
       print(i)
-      subsample <- as.zoo(prices_[paste0(events_$when[i] - (event_horizon + 100), "/", events_$when[i] + event_horizon + 100)])
+      subsample <- as.zoo(prices_[paste0(events_$when[i] - (event_horizon + 150), "/", events_$when[i] + event_horizon + 150)])
       if (length(subsample) == 0 | Inf %in% subsample) {
         return(NULL)
       } else {
-        es <- eventstudy(firm.returns = subsample,
-                         event.list = events_[i, ],
-                         event.window = event_horizon,
-                         type = "marketModel",
-                         to.remap = FALSE,
-                         inference = FALSE,
-                         model.args = list(
-                           market.returns = as.zoo(market_returns)
-                         )
-        )
+        if (model_type == "marketModel") {
+          es <- eventstudy(firm.returns = subsample,
+                           event.list = events_[i, ],
+                           event.window = event_horizon,
+                           type = "marketModel",
+                           to.remap = FALSE,
+                           inference = FALSE,
+                           model.args = list(
+                             market.returns = as.zoo(market_returns)
+                           )
+          )
+        } else if (model_type == "excessReturn") {
+          es <- eventstudy(firm.returns = subsample,
+                           event.list = events_[i, ],
+                           event.window = event_horizon,
+                           type = "excessReturn",
+                           to.remap = FALSE,
+                           inference = FALSE,
+                           model.args = list(
+                             market.returns = as.zoo(market_returns)
+                           )
+          )
+        } else if (model_type == "None") {
+          es <- eventstudy(firm.returns = subsample,
+                           event.list = events_[i, ],
+                           event.window = event_horizon,
+                           type = "None",
+                           to.remap = FALSE,
+                           inference = FALSE)
+        }
       }
     })
 
@@ -79,9 +105,8 @@ labeling_abnormal_returns <- function(events,
     abnormal_returns_dt <- lapply(abnormal_returns, as.data.table)
     abnormal_returns_dt <- lapply(abnormal_returns_dt, t)
     abnormal_returns_dt <- lapply(abnormal_returns_dt, function(x) {
-
       if (length(x) == 0) {
-        x <- t(as.matrix(rep(NA, 60)))
+        x <- t(as.matrix(rep(NA, event_horizon * 2)))
       }
       x
     })

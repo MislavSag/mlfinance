@@ -15,12 +15,13 @@
 #' @import doParallel
 #' @import runner
 #' @importFrom exuber radf psy_minw augment tidy index
+#' @importFrom parallel makeCluster clusterExport clusterCall stopCluster
 #'
 #' @export
 rolling_exuber <- function(prices_panel, row_index = 1:nrow(prices_panel), windows = c(200), workers = 4L, exuber_lag = 0L) {
 
   # solve No visible binding for global variable
-  symbol <- close <- NULL
+  symbol = close = `.` = NULL
 
   # checks
   testSubset(c("symbol", "close"), colnames(prices_panel))

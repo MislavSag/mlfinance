@@ -8,6 +8,7 @@
 #' @param workers Number of workers for parallel processing
 #' @param gas_dist Dist parametere in UniGASSpec fucntionUniGASSpec.
 #' @param gas_scaling Scaling parametere in UniGASSpec fucntionUniGASSpec.
+#' @param prediction_horizont GAS prediction horizont.
 #'
 #' @return Data.table with new features
 #'
@@ -16,12 +17,16 @@
 #' @import doParallel
 #' @import runner
 #' @import GAS
+#' @importFrom parallel makeCluster clusterExport clusterCall stopCluster
+#' @importFrom stats complete.cases
 #'
 #' @export
-rolling_gas <- function(prices_panel, row_index = 1:nrow(prices_panel), windows = c(200), workers = 4L, gas_dist = "sstd", gas_scaling = "Identity") {
+rolling_gas <- function(prices_panel, row_index = 1:nrow(prices_panel), windows = c(200),
+                        workers = 4L, gas_dist = "sstd", gas_scaling = "Identity",
+                        prediction_horizont = 22) {
 
   # solve No visible binding for global variable
-  symbol <- close <- NULL
+  symbol = close = returns = `.` = NULL
 
   # checks
   testSubset(c("symbol", "close"), colnames(prices_panel))
@@ -31,9 +36,13 @@ rolling_gas <- function(prices_panel, row_index = 1:nrow(prices_panel), windows 
   prices_panel[, returns := close / shift(close) - 1]
   prices_sample <- prices_panel[, .(symbol, date, returns)]
 
+  # GAS specification
+  GASSpec <- UniGASSpec(Dist = gas_dist, ScalingType = gas_scaling,
+                        GASPar = list(location = TRUE, scale = TRUE, shape = TRUE, skewness = TRUE))
+
   # start cluster
   cl <- makeCluster(workers)
-  clusterExport(cl, c("prices_sample", "get_series_statistics"), envir = environment())
+  clusterExport(cl, c("prices_sample", "get_series_statistics", "GASSpec"), envir = environment())
   clusterCall(cl, function() library(GAS))
   clusterCall(cl, function() library(data.table))
 
@@ -49,24 +58,19 @@ rolling_gas <- function(prices_panel, row_index = 1:nrow(prices_panel), windows 
           print(paste0("not enough data for symbol ", x$symbol[1]))
           return(NA)
         }
-
         # calculate arima forecasts
-        GASSpec <- UniGASSpec(Dist = gas_dist, ScalingType = gas_scaling,
-                              GASPar = list(location = TRUE, scale = TRUE, shape = TRUE, skewness = TRUE))
         Fit <- tryCatch(UniGASFit(GASSpec, na.omit(x$returns)), error = function(e) NA)
-        if (all(is.na(Fit))) {
+        if (isS4(Fit)) y <- UniGASFor(Fit, H = prediction_horizont, ReturnDraws = TRUE) else y <- NA
+        if (any(is.na(y@Draws)) | is.na(y)) {
           return(NA)
         } else {
-          y <- UniGASFor(Fit, H = 62, ReturnDraws = TRUE)
-
-          # define statistics
-          q <- as.data.table(quantile(y, p = c(0.01, 0.05)))
+          q <- as.data.table(GAS::quantile(y, c(0.01, 0.05)))
           q <- get_series_statistics(q, "var")
-          es <- as.data.table(ES(y, p = c(0.01, 0.05)))
+          es <- as.data.table(GAS::ES(y, c(0.01, 0.05)))
           es <- get_series_statistics(es, "es")
-          moments <- as.data.table(getMoments(y))
+          moments <- as.data.table(GAS::getMoments(y))
           moments <- get_series_statistics(moments, "moments")
-          f <- as.data.table(getForecast(y))
+          f <- as.data.table(GAS::getForecast(y))
           f <- get_series_statistics(f, "f")
           results <- cbind(symbol = x$symbol[1], date = x$date[length(x$date)], q, es, moments, f)
           colnames(results)[3:ncol(results)] <- paste(colnames(results)[3:ncol(results)], windows[i], sep = "_")
@@ -86,12 +90,24 @@ rolling_gas <- function(prices_panel, row_index = 1:nrow(prices_panel), windows 
   data_all_windows <- Reduce(function(x, y) merge(x, y, by = c("symbol", "date"), all.x = TRUE, all.y = TRUE), data_list)
   return(data_all_windows)
 }
-# start_time <- Sys.time()
-# x  <- rolling_gas(prices_panel[1:350, .(symbol, date, close)], row_index = c(300:400), windows = c(200, 300), workers = 20L, gas_dist = "sstd", gas_scaling = "Identity")
-# end_time <- Sys.time()
-# end_time - start_time
 
+#' @title Help function for Rolling GAS
+#'
+#' @param df a data.table object with GAS results.
+#' @param colname_prefix prefix for column names
+#'
+#' @return Data.table with GAS results
+#'
+#' @import data.table
+#' @importFrom stats na.omit sd
+#'
+#' @export
 get_series_statistics <- function(df, colname_prefix = "var") {
+
+  # solve No visible binding for global variable
+  id = value = col_name = `.` = variable = NULL
+
+  # calculate statistics
   stats <- lapply(df, function(x) {
     var_1 <- x[1]
     var_subsample <- mean(x[1:(length(x)/2)], na.rm = TRUE)
@@ -105,4 +121,3 @@ get_series_statistics <- function(df, colname_prefix = "var") {
   colnames(stats) <- gsub("var", colname_prefix, colnames(stats))
   return(stats)
 }
-

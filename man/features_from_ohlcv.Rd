@@ -14,6 +14,8 @@ features_from_ohlcv(
 \item{ohlcv}{a data.table object with coluimns: symbol, datetime, open, hogh, low, close, volume}
 
 \item{window_sizes}{Length of window for calculating rolling versions of the indicators.}
+
+\item{quantile_divergence_window}{window size from divergence from quantiles indicator.}
 }
 \value{
 Data.table with new features

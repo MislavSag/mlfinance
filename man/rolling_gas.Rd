@@ -10,7 +10,8 @@ rolling_gas(
   windows = c(200),
   workers = 4L,
   gas_dist = "sstd",
-  gas_scaling = "Identity"
+  gas_scaling = "Identity",
+  prediction_horizont = 22
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ rolling_gas(
 \item{gas_dist}{Dist parametere in UniGASSpec fucntionUniGASSpec.}
 
 \item{gas_scaling}{Scaling parametere in UniGASSpec fucntionUniGASSpec.}
+
+\item{prediction_horizont}{GAS prediction horizont.}
 }
 \value{
 Data.table with new features

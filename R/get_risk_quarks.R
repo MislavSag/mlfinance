@@ -15,21 +15,23 @@
 #' @import parallel
 #' @import quarks
 #' @import runner
+#' @importFrom parallel makeCluster
 #'
 #' @return Data frame with yahoo earnings calnedar data
 #'
 #' @export
-#
 # model = c("EWMA")
 # method = c("age", "vwhs", "fhs")
-###### DOESNT WORK YET ##################
-# y <- rollcast(na.omit(x$returns)[1:201],
+# ##### DOESNT WORK YET ##################
+# x <- prices_sample[1:1000]
+# y <- rollcast(na.omit(x$returns)[1:202],
 #               p = params_$p,
 #               model = params_$model,
 #               method = params_$method,
-#               nout = 1,
+#               nout = 2,
 #               nwin = params_$win_size
 # )
+# na.omit(x$returns)[202]
 #
 # get_risk_quarks <- function(prices_panel, row_index = 1:nrow(prices_panel), p = c(0.975), win_size = 200, model = c("EWMA", "GARCH"),
 #                             method = c("plain", "age", "vwhs", "fhs"), forecast_length = 100, workers = 4L) {

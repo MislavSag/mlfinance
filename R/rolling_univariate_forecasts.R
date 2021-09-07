@@ -3,8 +3,10 @@
 #' @description Function calculates forecastas based on auto.arima and nnetar functions from forecast package.
 #'
 #' @param prices_panel a data.table object with coluimns: symbol, datetime, open, hogh, low, close, volume
+#' @param row_index row index for which to calculate radf values.
 #' @param windows Length of window for calculating forecasts on rolling window.
 #' @param workers Number of workers for parallel processing
+#' @param forecast_type type of time series forecasts.
 #'
 #' @return Data.table with new features
 #'
@@ -13,13 +15,15 @@
 #' @import forecast
 #' @import doParallel
 #' @import runner
+#' @importFrom parallel makeCluster clusterExport clusterCall stopCluster
+#' @importFrom stats sd
 #'
 #' @export
 rolling_univariate_forecasts <- function(prices_panel, row_index = 1:nrow(prices_panel), windows = c(200), workers = 4L,
                                     forecast_type = c("autoarima", "nnetar")) {
 
   # solve No visible binding for global variable
-  symbol <- open <- high <- low <- close <- volume <- prices <- returns_1 <- NULL
+  symbol = open = high = low = close = volume = prices = returns_1 = `.` = returns = NULL
 
   # checks
   testSubset(c("symbol", "close"), colnames(prices_panel))

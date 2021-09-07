@@ -4,6 +4,7 @@
 #'
 #' @param ohlcv a data.table object with coluimns: symbol, datetime, open, hogh, low, close, volume
 #' @param window_sizes Length of window for calculating rolling versions of the indicators.
+#' @param quantile_divergence_window window size from divergence from quantiles indicator.
 #'
 #' @return Data.table with new features
 #'
@@ -14,7 +15,7 @@
 #' @import checkmate
 #' @importFrom stats na.omit setNames
 #' @importFrom roll roll_sd roll_lm roll_quantile
-#' @importFrom QuantTools roll_percent_rank sma ema
+#' @importFrom QuantTools roll_percent_rank sma ema rsi
 #'
 #' @export
 
@@ -34,6 +35,8 @@
 # library(Rcatch22)
 # library(quarks)
 # library(GAS)
+# library(theft)
+# library(reticulate)
 # prices <- get_blob_file("prices.rds", container = "fundamentals", save_file = "D:/fundamental_data/prices.rds", refresh_data_old = 100)
 # prices <- prices[open > 0 & high > 0 & low > 0 & close > 0 & adjClose > 0] # remove rows with zero and negative prices
 # setorderv(prices, c("symbol", "date"))
@@ -104,7 +107,7 @@ features_from_ohlcv <- function(ohlcv, window_sizes = c(5, 22), quantile_diverge
 
   # rolling TA indicators
   new_cols <- paste0("rsi_", window_sizes)
-  ohlcv[, (new_cols) := lapply(window_sizes, function(w) RSI(close, n = w)), by = symbol]
+  ohlcv[, (new_cols) := lapply(window_sizes, function(w) rsi(close, n = w)), by = symbol]
   new_cols <- expand.grid("bbands", c("dn", "mavg", "up", "pctB"), window_sizes)
   new_cols <- paste(new_cols$Var1, new_cols$Var2, new_cols$Var3, sep = "_")
   ohlcv <- cbind(ohlcv,

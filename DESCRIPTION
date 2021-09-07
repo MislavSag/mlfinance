@@ -26,9 +26,14 @@ Imports:
     forecast,
     doParallel,
     runner,
-    Rcatch22,
+    theft,
     exuber,
-    zoo
+    zoo,
+    parallel,
+    GAS,
+    backCUSUM,
+    ptsuite,
+    reticulate
 Suggests:
     knitr,
     rmarkdown,

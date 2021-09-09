@@ -33,7 +33,8 @@ Imports:
     GAS,
     backCUSUM,
     ptsuite,
-    reticulate
+    reticulate,
+    Rcpp
 Suggests:
     knitr,
     rmarkdown,

@@ -67,8 +67,12 @@ features_from_ohlcv <- function(ohlcv, window_sizes = c(5, 22), quantile_diverge
   assert_double(ohlcv$close, lower = 1e-005)
 
   # import banchmark
-  # spy <- get_daily_prices("SPY", start_date = "1990-01-01", end_date = Sys.Date(), blob_file = "SPY.rds")
-  # spy <- setorder(spy, "date")
+  spy <- get_daily_prices("SPY", start_date = "1990-01-01", end_date = Sys.Date(), blob_file = NA)
+  spy <- setorder(spy, "date")
+  spy[, returns := adjClose / shift(adjClose) - 1]
+  spy <- na.omit(spy[, .SD, .SDcols = c("symbol", "date", "adjClose", "returns")])
+  stock_with_market <- spy[, .(date, adjClose)][ohlcv[, .(symbol, date, close)], on = c("date")]
+  stock_with_market <- na.omit(stock_with_market)
 
   # close ATH
   ohlcv[, close_ath := (cummax(close) - close) / cummax(close), by = symbol]
@@ -151,6 +155,15 @@ features_from_ohlcv <- function(ohlcv, window_sizes = c(5, 22), quantile_diverge
   ohlcv <- generate_quantile_divergence(ohlcv, p = 0.75)
   ohlcv <- generate_quantile_divergence(ohlcv, p = 0.25)
   ohlcv <- generate_quantile_divergence(ohlcv, p = 0.99)
+
+  # rolling linear regression
+  stock_with_market_lm <- copy(stock_with_market)
+  new_cols <- paste0("roll_lm_market_beta_", window_sizes)
+  stock_with_market_lm[, (new_cols) := lapply(c(window_sizes), function(w) roll_lm(close, adjClose, w)$beta), by = symbol]
+  new_cols <- paste0("roll_lm_market_rsquared_", window_sizes)
+  stock_with_market_lm[, (new_cols) := lapply(window_sizes, function(w) roll_lm(close, adjClose, w)$r.squared), by = symbol]
+  stock_with_market_lm[, `:=`(close = NULL, adjClose = NULL)]
+  ohlcv <- merge(ohlcv, stock_with_market_lm, by = c("symbol", "date"), all.x = TRUE, all.y = FALSE)
 
   return(ohlcv)
 }
